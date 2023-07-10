@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Incident Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            position: relative; /* Added */
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .red {
+            color: red;
+            font-weight: bold;
+        }
+        
+        /* Added */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .overlay.active {
+            display: flex;
+        }
+            
+        .overlay-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 5px;
+            position: relative;
+            z-index: 1;
+            border: 2px solid black;
+            font-family: Arial, sans-serif; /* Add your desired font family */
+            font-size: 14px; /* Add your desired font size */
+        }
+
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Log Source</th>
+                {% for date in dates %}
+                    <th>{{ date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer, date_counts in incidents.items() %}
+                <tr>
+                    <td>{{ customer }}</td>
+                    {% for date in dates %}
+                        <td {% if date_counts[date] > 2 %}class="red"{% endif %}>
+                            {{ date_counts[date] }}
+                            <div class="overlay">
+                                <div class="overlay-content">
+                                    <p>Hello</p>
+                                    <span class="close-button">Close</span>
+                                </div>
+                            </div>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        // Add event listeners to each cell with the "overlay" class
+        var overlayCells = document.querySelectorAll('td');
+        overlayCells.forEach(function(cell) {
+            cell.addEventListener('click', function() {
+                var activeOverlay = document.querySelector('.overlay.active');
+                if (activeOverlay) {
+                    activeOverlay.classList.remove('active');
+                }
+                
+                var overlay = this.querySelector('.overlay');
+                overlay.classList.add('active');
+            });
+        });
+        
+        // Add event listener to close button
+        var closeButtons = document.querySelectorAll('.close-button');
+        closeButtons.forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                event.stopPropagation();
+                var overlay = this.closest('.overlay');
+                overlay.classList.remove('active');
+            });
+        });
+    </script>
+    
+</body>
+</html>

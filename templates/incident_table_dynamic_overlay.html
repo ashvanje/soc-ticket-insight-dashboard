@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Incident Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+    
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            z-index: 1;
+        }
+    
+        th {
+            background-color: #f2f2f2;
+        }
+    
+        .red {
+            color: red;
+            font-weight: bold;
+        }
+    
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center; /* Updated */
+            align-items: center; /* Updated */
+            z-index: 2;
+            text-align: left;
+            pointer-events: none;
+        }
+    
+        .overlay.active {
+            display: block;
+        }
+    
+        /* .overlay-content {
+            background-color: rgba(255, 255, 255, 2);
+            padding: 40px;
+            border-radius: 5px;
+            position: relative;
+            z-index: 10;
+            border: 2px solid black;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: left;
+            overflow: auto;
+            max-height: 400px;
+        } */
+    
+        .overlay-content {
+            background-color: rgba(255, 255, 255, 2);
+            padding: 40px;
+            border-radius: 5px;
+            position: fixed; /* Update: Change position to fixed */
+            top: 50%; /* Add top and left properties */
+            left: 50%;
+            transform: translate(-50%, -50%); /* Add transform property */
+            z-index: 10;
+            border: 2px solid black;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: left;
+            overflow: auto;
+            max-height: 400px;
+        }
+
+        
+        .overlay.active .overlay-content {
+            pointer-events: auto;
+        }
+    
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+    
+    </style>
+    
+    
+    
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Log Source</th>
+                {% for date in dates %}
+                    <th>{{ date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer, date_counts in incidents.items() %}
+                <tr>
+                    <td>{{ customer }}</td>
+                    {% for date in dates %}
+                    <td {% if date_counts[date]['count'] > 10 %}class="red"{% endif %}>
+                        {{ date_counts[date]['count'] }}
+                        <div class="overlay">
+                            <div class="overlay-content">
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Issue Key</th>
+                                    <th>Summary</th>
+                                    <th>Custom field (Actual time to first response)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {% for item in date_counts[date]["items"] %}
+                                  <tr>
+                                    <td>{{ item["issue_key"] }}</td>
+                                    <td>{{ item["summary"] }}</td>
+                                    <td>{{ item["Custom field (Actual time to first response)"] }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                              <span class="close-button">Close</span>
+                            </div>
+                          </div>
+                          
+                    </td>
+                    
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+    // Add event listeners to each cell with the "overlay" class
+var overlayCells = document.querySelectorAll('td');
+overlayCells.forEach(function(cell) {
+    console.log('click2222')
+    cell.addEventListener('click', function(event) {
+        var activeOverlay = document.querySelector('.overlay.active');
+        if (activeOverlay) {
+            activeOverlay.classList.remove('active');
+        }
+
+        var overlay = this.querySelector('.overlay');
+        overlay.classList.add('active');
+        event.stopPropagation(); // Prevent event bubbling to the table
+    });
+});
+
+// Add event listener to close button
+var closeButtons = document.querySelectorAll('.close-button');
+closeButtons.forEach(function(button) {
+    button.addEventListener('click', function(event) {
+        event.stopPropagation();
+        var overlay = this.closest('.overlay');
+        overlay.classList.remove('active');
+    });
+});
+// Add event listener to close overlay when clicking outside
+document.addEventListener('click', function(event) {
+    console.log('click');
+    var overlayContent = document.querySelector('.overlay-content');
+    console.log('click2');
+    if (overlayContent && !overlayContent.contains(event.target)) {
+        console.log('click3');
+        var activeOverlay = document.querySelector('.overlay.active');
+        if (activeOverlay) {
+            console.log('click4');
+            activeOverlay.classList.remove('active');
+        }
+    }
+});
+// Add event listener to close overlay when clicking outside
+var isOverlayClicked = false;
+
+// Set flag when clicking on overlay content
+// var overlayContents = document.querySelectorAll('.overlay-content');
+// overlayContents.forEach(function(overlayContent) {
+//     console.log('click5');
+//     overlayContent.addEventListener('mousedown', function(event) {
+//         isOverlayClicked = true;
+//     });
+// });
+
+// // Close overlay if clicking outside
+// document.addEventListener('mousedown', function(event) {
+//     console.log('click6');
+//     setTimeout(function() {
+//     console.log('click7');
+//         if (!isOverlayClicked) {
+//             var activeOverlay = document.querySelector('.overlay.active');
+//             if (activeOverlay) {
+//                 activeOverlay.classList.remove('active');
+//             }
+//         }
+//         isOverlayClicked = false;
+//     }, 0);
+// });
+
+    </script>
+    
+    
+</body>
+</html>

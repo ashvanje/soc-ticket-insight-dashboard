@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Incident Table</title>
+    <!-- Add the Font Awesome CDN link in the <head> section of your HTML file -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .red {
+            color: red;
+            font-weight: bold;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            /* Updated */
+            align-items: center;
+            /* Updated */
+            z-index: 2;
+            text-align: left;
+            pointer-events: none;
+            color: #333;
+            font-weight: normal;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* .overlay-content {
+            background-color: rgba(255, 255, 255, 2);
+            padding: 40px;
+            border-radius: 5px;
+            position: relative;
+            z-index: 10;
+            border: 2px solid black;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: left;
+            overflow: auto;
+            max-height: 400px;
+        } */
+
+        .overlay-content {
+            background-color: rgba(255, 255, 255, 2);
+            padding: 40px;
+            border-radius: 5px;
+            position: fixed;
+            /* Update: Change position to fixed */
+            top: 50%;
+            /* Add top and left properties */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Add transform property */
+            z-index: 10;
+            border: 2px solid black;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-align: left;
+            overflow: auto;
+            max-height: 400px;
+        }
+
+
+        .overlay.active .overlay-content {
+            pointer-events: auto;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .loading-overlay {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay .overlay-content {
+            display: none;
+        }
+
+        .loading-overlay .loading-icon {
+    font-size: 32px;
+    color: #333;
+        }
+    </style>
+
+
+
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Log Source</th>
+                {% for date in dates %}
+                <th>{{ date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer, date_counts in incidents.items() %}
+            <tr>
+                <td>{{ customer }}</td>
+                {% for date in dates %}
+                <td {% if date_counts[date]['count']> 10 %}class="red"{% endif %}>
+                    {{ date_counts[date]['count'] }}
+                    <div class="overlay">                          
+                        <div class="overlay-content">
+                            <div class="loading-overlay">
+                                <div class="overlay-content">
+                                  <span class="loading-icon">Loadin2g...</span>
+                                  <span class="loading-icon"><i class="fas fa-spinner fa-spin"></i></span>
+                                </div>
+                              </div>
+    
+                            <div id="response-container"></div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Issue Key</th>
+                                        <th>Summary</th>
+                                        <th>Custom field (Actual time to first response)</th>
+                                        <th>Custom field (Raw Alert)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in date_counts[date]["items"] %}
+                                    <tr>
+                                        <td>{{ item["issue_key"] }}</td>
+                                        <td>{{ item["summary"] }}</td>
+                                        <td>{{ item["Custom field (Actual time to first response)"] }}</td>
+                                        <td style="display: none;">{{ item["Custom field (Raw Alert)"] }}</td>
+                                        <td>
+                                            <button class="investigate-button">Investigate</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <span class="close-button">Close</span>
+                        </div>
+                    </div>
+
+                </td>
+
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <script>
+        // Add event listeners to each cell with the "overlay" class
+        var overlayCells = document.querySelectorAll('td');
+        overlayCells.forEach(function (cell) {
+            cell.addEventListener('click', function (event) {
+                var activeOverlay = document.querySelector('.overlay.active');
+                if (activeOverlay) {
+                    activeOverlay.classList.remove('active');
+                }
+
+                            
+                var overlay = this.querySelector('.overlay');
+                overlay.classList.add('active');
+                event.stopPropagation(); // Prevent event bubbling to the table
+
+                var loadingOverlay = overlay.querySelector('.loading-overlay');
+                loadingOverlay.style.display = 'flex';
+
+                var loadingIcon = document.createElement('span');
+                loadingIcon.className = 'loading-icon';
+                loadingIcon.textContent = 'Loading...';
+
+                loadingOverlay.appendChild(loadingIcon);
+                
+                event.preventDefault();
+                console.log('chkpt2')
+                var tableData = [];
+                var rows = overlay.querySelectorAll('.overlay-content table tbody tr');
+                // var rows = overlay.querySelectorAll('.overlay-content table tbody tr td:nth-child(-n+3)');
+                console.log('chkpt2')
+                var counter = 0;  // Counter for the number of rows processed
+                rows.forEach(function (row) {
+                    if (counter < 100) {  // Limit the number of rows to 20
+                        var rowData = [];
+                        var cells = row.querySelectorAll('td:nth-child(-n+3)');
+                        cells.forEach(function (cell) {
+                            console.log('cell: ' + cell)
+                            rowData.push(cell.textContent);
+                        });
+                        console.log('rowData: ' + rowData)
+                        tableData.push(rowData);
+                        counter++;
+                    }
+                });
+                console.log('chkpt2')
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/convert-to-csv', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                console.log('chkpt2')
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        loadingOverlay.style.display = 'none';
+                        var response = JSON.parse(xhr.responseText);
+                        console.log('xhr.responseText: ' + xhr.responseText)
+                        console.log('response: ' + response)
+                        var activeOverlay2 = document.querySelector('.overlay.active');
+                        // var responseContainer = document.getElementById('response-container');
+                        var responseContainer = activeOverlay2.querySelector('#response-container');
+                        responseContainer.innerHTML = response.data.replace(/\n/g, '<br>');  // Replace \n with <br> tags
+                    }
+                };
+                console.log('chkpt3')
+                console.log(JSON.stringify({ 'tableData': tableData }))
+                xhr.send(JSON.stringify({ 'tableData': tableData }));
+                console.log('chkpt4')
+            });
+        });
+
+        // Add event listener to close button
+        var closeButtons = document.querySelectorAll('.close-button');
+        closeButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                event.stopPropagation();
+                var overlay = this.closest('.overlay');
+                overlay.classList.remove('active');
+            });
+        });
+
+        // Add event listener to close overlay when clicking outside
+        document.addEventListener('click', function (event) {
+            var overlayContent = document.querySelector('.overlay-content');
+            if (overlayContent && !overlayContent.contains(event.target)) {
+                var activeOverlay = document.querySelector('.overlay.active');
+                if (activeOverlay) {
+                    activeOverlay.classList.remove('active');
+                }
+            }
+        });
+
+        // Function to sort a column in a table
+        function sortColumn(index, sortOrder, dateFormat) {
+            var table = document.querySelector('table');
+            var rows = Array.from(table.rows).slice(1); // Exclude the header row
+            rows.sort(function (a, b) {
+                var cellA = parseDate(a.cells[index].textContent.trim(), dateFormat);
+                var cellB = parseDate(b.cells[index].textContent.trim(), dateFormat);
+                if (sortOrder === 'asc') {
+                    return cellA - cellB;
+                } else {
+                    return cellB - cellA;
+                }
+            });
+            rows.forEach(function (row) {
+                table.appendChild(row);
+            });
+        }
+
+        // Function to convert a date string to a Date object based on the specified format
+        function parseDate(dateString, format) {
+            var parts = dateString.split('/');
+            var day = parseInt(parts[0]);
+            var month = parseInt(parts[1]);
+            var year = parseInt(parts[2]);
+            if (format === 'dd/mm/yyyy') {
+                return new Date(year, month - 1, day);
+            } else {
+                return new Date(year, month, day);
+            }
+        }
+
+        // Sort the latest date's column (last column) in descending order on page load
+        window.onload = function () {
+            var table = document.querySelector('table');
+            var lastIndex = table.rows[0].cells.length - 1;
+            sortColumn(lastIndex, 'asc', 'dd/mm/yyyy');
+        };
+
+        // Add event listeners to each "Investigate" button
+        var investigateButtons = document.querySelectorAll('.investigate-button');
+        investigateButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                event.stopPropagation(); // Prevent event bubbling
+
+                // Get the row data
+                var row = this.parentNode.parentNode;
+                var issueKey = row.cells[0].textContent;
+                var summary = row.cells[1].textContent;
+                var timeToFirstResponse = row.cells[2].textContent;
+                var rawAlert = row.cells[3].textContent;
+
+                // Create the request payload
+                var requestData = {
+                    issueKey: issueKey,
+                    summary: summary,
+                    timeToFirstResponse: timeToFirstResponse,
+                    rawAlert: rawAlert
+                };
+
+                // Make the POST API call
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/investigate', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        showInvestigationResult(response);
+                    }
+                };
+                xhr.send(JSON.stringify(requestData));
+            });
+        });
+        // Function to show the investigation result in a new overlay
+        function showInvestigationResult(response) {
+            var overlay = document.createElement('div');
+            overlay.className = 'overlay active';
+
+            var overlayContent = document.createElement('div');
+            overlayContent.className = 'overlay-content';
+
+            var description = document.createElement('p');
+            description.innerHTML = 'Description: ' + response.description.replace(/\n/g, '<br>');
+
+            var proposedFix = document.createElement('p');
+            proposedFix.innerHTML = 'Proposed Fix: ' + response.proposedFix.replace(/\n/g, '<br>');
+
+            overlayContent.appendChild(description);
+            overlayContent.appendChild(proposedFix);
+
+            var closeButton = document.createElement('span');
+            closeButton.className = 'close-button';
+            closeButton.textContent = 'Close';
+
+            closeButton.addEventListener('click', function (event) {
+                event.stopPropagation();
+                overlay.classList.remove('active');
+            });
+
+            overlayContent.appendChild(closeButton);
+            overlay.appendChild(overlayContent);
+            document.body.appendChild(overlay);
+        }
+
+    </script>
+
+</body>
+
+</html>
