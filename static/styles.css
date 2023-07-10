@@ -1,0 +1,125 @@
+body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+    padding: 12px 15px;
+    text-align: left;
+    color: #333;
+    font-weight: normal;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.red {
+    color: red;
+    font-weight: bold;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    text-align: left;
+    pointer-events: none;
+    color: #333;
+    font-weight: normal;
+}
+
+.overlay.active {
+    display: block;
+}
+
+.overlay-content {
+    background-color: rgba(255, 255, 255, 2);
+    padding: 40px;
+    border-radius: 5px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    border: 2px solid black;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    text-align: left;
+    overflow: auto;
+    max-height: 400px;
+}
+
+.overlay.active .overlay-content {
+    pointer-events: auto;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-button:hover {
+    color: #666;
+}
+
+.loading-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-overlay .overlay-content {
+    display: none;
+}
+
+.loading-overlay .loading-icon {
+    font-size: 32px;
+    color: #333;
+}
+
+.investigate-button {
+    background-color: #007aff;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.investigate-button:hover {
+    background-color: #0056b3;
+}
+
+a {
+    color: #007aff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

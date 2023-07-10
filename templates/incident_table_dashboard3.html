@@ -4,24 +4,36 @@
 <head>
     <title>Incident Table</title>
     <!-- Add the Font Awesome CDN link in the <head> section of your HTML file -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
 
     <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
         table {
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             width: 100%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: auto;
+            box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         th,
         td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px 15px;
             text-align: left;
-            z-index: 1;
+            color: #333;
+            font-weight: normal;
         }
 
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
 
         .red {
@@ -96,6 +108,11 @@
             top: 10px;
             right: 10px;
             cursor: pointer;
+            color: #999;
+        }
+
+        .close-button:hover {
+            color: #666;
         }
 
         .loading-overlay {
@@ -109,11 +126,33 @@
         }
 
         .loading-overlay .loading-icon {
-    font-size: 32px;
-    color: #333;
+            font-size: 32px;
+            color: #333;
+        }
+
+        .investigate-button {
+            background-color: #007aff;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .investigate-button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            color: #007aff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
-
 
 
 </head>
@@ -135,15 +174,15 @@
                 {% for date in dates %}
                 <td {% if date_counts[date]['count']> 10 %}class="red"{% endif %}>
                     {{ date_counts[date]['count'] }}
-                    <div class="overlay">                          
+                    <div class="overlay">
                         <div class="overlay-content">
                             <div class="loading-overlay">
                                 <div class="overlay-content">
-                                  <span class="loading-icon">Loadin2g...</span>
-                                  <span class="loading-icon"><i class="fas fa-spinner fa-spin"></i></span>
+                                    <span class="loading-icon">Loadin2g...</span>
+                                    <span class="loading-icon"><i class="fas fa-spinner fa-spin"></i></span>
                                 </div>
-                              </div>
-    
+                            </div>
+
                             <div id="response-container"></div>
                             <table>
                                 <thead>
@@ -157,7 +196,8 @@
                                 <tbody>
                                     {% for item in date_counts[date]["items"] %}
                                     <tr>
-                                        <td><a href="https://caas.pwchk.com/browse/{{ item['issue_key'] }}" target="_blank">{{ item['issue_key'] }}</a></td>
+                                        <td><a href="https://caas.pwchk.com/browse/{{ item['issue_key'] }}"
+                                                target="_blank">{{ item['issue_key'] }}</a></td>
                                         <td>{{ item["summary"] }}</td>
                                         <td>{{ item["Custom field (Actual time to first response)"] }}</td>
                                         <td style="display: none;">{{ item["Custom field (Raw Alert)"] }}</td>
@@ -191,7 +231,7 @@
                     activeOverlay.classList.remove('active');
                 }
 
-                            
+
                 var overlay = this.querySelector('.overlay');
                 overlay.classList.add('active');
                 event.stopPropagation(); // Prevent event bubbling to the table
@@ -204,7 +244,7 @@
                 loadingIcon.textContent = 'Loading...';
 
                 loadingOverlay.appendChild(loadingIcon);
-                
+
                 event.preventDefault();
                 console.log('chkpt2')
                 var tableData = [];

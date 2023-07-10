@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Incident Table</title>
+    <!-- Add the Font Awesome CDN link in the <head> section of your HTML file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Log Source</th>
+                {% for date in dates %}
+                <th>{{ date }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer, date_counts in incidents.items() %}
+            <tr>
+                <td>{{ customer }}</td>
+                {% for date in dates %}
+                <td {% if date_counts[date]['count']> 10 %}class="red"{% endif %}>
+                    {{ date_counts[date]['count'] }}
+                    <div class="overlay">
+                        <div class="overlay-content">
+                            <div class="loading-overlay">
+                                <div class="overlay-content">
+                                    <span class="loading-icon">Loadin2g...</span>
+                                    <span class="loading-icon"><i class="fas fa-spinner fa-spin"></i></span>
+                                </div>
+                            </div>
+
+                            <div id="response-container"></div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Issue Key</th>
+                                        <th>Summary</th>
+                                        <th>Custom field (Actual time to first response)</th>
+                                        <th>Custom field (Raw Alert)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in date_counts[date]["items"] %}
+                                    <tr>
+                                        <td><a href="https://caas.pwchk.com/browse/{{ item['issue_key'] }}"
+                                                target="_blank">{{ item['issue_key'] }}</a></td>
+                                        <td>{{ item["summary"] }}</td>
+                                        <td>{{ item["Custom field (Actual time to first response)"] }}</td>
+                                        <td style="display: none;">{{ item["Custom field (Raw Alert)"] }}</td>
+                                        <td>
+                                            <button class="investigate-button">Investigate</button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <span class="close-button">Close</span>
+                        </div>
+                    </div>
+
+                </td>
+
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

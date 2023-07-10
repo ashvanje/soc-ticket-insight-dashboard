@@ -39,7 +39,7 @@ def parse_csv(file_path):
 @app.route('/')
 def incident_table():
     incidents, sorted_dates = parse_csv(csv_file)
-    return render_template('incident_table_dynamic_overlay2.html', incidents=dict(incidents), dates=sorted_dates)
+    return render_template('incident4.html', incidents=dict(incidents), dates=sorted_dates)
 
 
 @app.route('/convert-to-csv', methods=['POST'])
