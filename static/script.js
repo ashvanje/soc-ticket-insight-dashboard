@@ -107,9 +107,9 @@ function parseDate(dateString, format) {
   
 // Sort the latest date's column (last column) in descending order on page load
 window.onload = function () {
-  var table = document.querySelector('table');
-  var lastIndex = table.rows[0].cells.length - 1;
-  sortColumn(lastIndex, 'asc', 'dd/mm/yyyy');
+  // var table = document.querySelector('table');
+  // var lastIndex = table.rows[0].cells.length - 1;
+  // sortColumn(lastIndex, 'asc', 'dd/mm/yyyy');
 };
   
 // Add event listeners to each "Investigate" button
@@ -204,3 +204,51 @@ function showInvestigationResult(response) {
   overlay.appendChild(overlayContent);
   document.body.appendChild(overlay);
 }
+
+function sortColumn(headerCell, columnIndex) {
+  var table = document.querySelector('table');
+  var rows = Array.from(table.rows).slice(1); // Exclude the header row
+
+  rows.sort(function (a, b) {
+      var cellA = a.cells[columnIndex].textContent.trim();
+      var cellB = b.cells[columnIndex].textContent.trim();
+
+      if (cellA < cellB) {
+          return -1;
+      } else if (cellA > cellB) {
+          return 1;
+      } else {
+          return 0;
+      }
+  });
+
+  // Remove the "asc" and "desc" classes from all header cells
+  var headerCells = document.querySelectorAll('th');
+  headerCells.forEach(function (cell) {
+      cell.classList.remove('asc', 'desc');
+  });
+
+  if (headerCell.classList.contains('asc')) {
+      rows.reverse();
+      headerCell.classList.remove('asc');
+      headerCell.classList.add('desc');
+  } else {
+      headerCell.classList.remove('desc');
+      headerCell.classList.add('asc');
+  }
+
+  rows.forEach(function (row) {
+      table.appendChild(row);
+  });
+}
+
+function attachHeaderListeners() {
+  var headerCells = document.querySelectorAll('th');
+  headerCells.forEach(function (cell, index) {
+      cell.addEventListener('click', function () {
+          sortColumn(this, index);
+      });
+  });
+}
+
+attachHeaderListeners();
