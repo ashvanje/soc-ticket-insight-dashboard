@@ -83,7 +83,18 @@
             $('#incident-table').DataTable();
         });
     </script>
-
+    <!-- <script>
+        $(document).ready(function() {
+            $('#incident-table').DataTable({
+                columnDefs: [
+                    {
+                        targets: 1, // The column index (0-based) of the column you want to sort
+                        type: 'num', // Specify 'num' for numeric sorting
+                    }
+                ]
+            });
+        });
+    </script> -->
 </body>
 
 </html>
